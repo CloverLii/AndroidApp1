@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             contacts.add(new Contact("Joe Bloggs", "joe@bloggs.co.nz", "021123456"));
             contacts.add(new Contact("Jane Doe", "jane@doe.co.nz", "022123456"));
         }
-
     }
 
     public void saveContact(View view){
@@ -52,13 +51,27 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         EditText emailField = (EditText) findViewById(R.id.email);
         String email = emailField.getText().toString();
 
-        contacts.add(new Contact(name, email, mobile));
+        // update the info of existed contact or add new one
+        for(Contact item: contacts){
+            if(item.name.equals(name)){
+                System.out.println("same contact found");
+                item.name = name;
+                item.email = email;
+                item.mobile = mobile;
+            } else {
+                System.out.println("new contact added");
+                contacts.add(new Contact(name, email, mobile));
+            }
+        }
+
         //Toast.makeText(this, "Saved contact for "+ name + email + mobile, Toast.LENGTH_SHORT).show();
+
     }
 
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Contact contact = (Contact) parent.getAdapter().getItem(position);
+            System.out.println("item clicked: " + contact.name);
             Toast.makeText(parent.getContext(), "Clicked " + contact,
                     Toast.LENGTH_SHORT).show();
             //contacts.add(contact);
