@@ -26,6 +26,7 @@
         android:ems="10"
         android:hint="Firstname Lastname"
         android:inputType="textPersonName" />
+
     <ImageView
         android:id="@+id/email_icon"
         android:layout_width="wrap_content"
@@ -46,9 +47,8 @@
         android:layout_toRightOf="@+id/email_icon"
         android:ems="10"
         android:hint="Email address"
-        android:inputType="textEmailAddress">
-        <requestFocus />
-    </EditText>
+        android:inputType="textEmailAddress"/>
+
     <ImageView
         android:id="@+id/phone_icon"
         android:layout_width="wrap_content"
@@ -71,8 +71,8 @@
         android:id="@+id/btnSubmit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
+        android:layout_below="@id/mobile"
         android:onClick="saveContact"
         android:text="Save contact" />
 
