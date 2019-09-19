@@ -1,6 +1,8 @@
 package comp575.helloworld;
 
 import android.arch.lifecycle.ViewModelStoreOwner;
+import android.content.res.Configuration;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.AdapterView;
@@ -9,71 +11,64 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.view.View;
-
+import android.widget.Adapter;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
+import junit.framework.Assert;
+import java.util.ArrayList;
+
+public class MainActivity extends AppCompatActivity {
+
     private ArrayList<Contact> contacts = new ArrayList<Contact>();
     private ArrayAdapter<Contact> adapter;
-    private ListView contactListview;
-
+    private ListView contactListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Setup adapter
-        contactListview = (ListView)findViewById(R.id.contactsListView);
+        // setup Adapter
+        contactListView = findViewById(R.id.contactsListView);
+        adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, contacts);
 
-        adapter = new ArrayAdapter<Contact>(this, android.R.layout.simple_list_item_1,contacts);
+        //check device orientation
+        int orientation = getResources().getConfiguration().orientation;
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE){
+            contactListView.setAdapter(adapter);
 
-        // contactsListView does not exist in portrait view
-        if(contactListview != null){
-            contactListview.setAdapter(adapter);
-            contactListview.setOnItemClickListener(this);
-
-            // Add some contacts
+            // add some Contacts
             contacts.add(new Contact("Joe Bloggs", "joe@bloggs.co.nz", "021123456"));
             contacts.add(new Contact("Jane Doe", "jane@doe.co.nz", "022123456"));
         }
     }
 
-    public void saveContact(View view){
-        //Toast.makeText(this, "Save contact clicked", Toast.LENGTH_SHORT).show();
-
-        EditText nameField = (EditText) findViewById(R.id.name);
+    public void saveContact(View view) {
+        EditText nameField = findViewById(R.id.name);
         String name = nameField.getText().toString();
 
-        EditText mobileField = (EditText) findViewById(R.id.mobile);
-        String  mobile = mobileField.getText().toString();
-
-        EditText emailField = (EditText) findViewById(R.id.email);
+        EditText emailField = findViewById(R.id.email);
         String email = emailField.getText().toString();
 
-        // update the info of existed contact or add new one
-        for(Contact item: contacts){
-            if(item.name.equals(name)){
-                System.out.println("same contact found");
-                item.name = name;
-                item.email = email;
-                item.mobile = mobile;
-            } else {
-                System.out.println("new contact added");
-                contacts.add(new Contact(name, email, mobile));
+        EditText phoneField = findViewById(R.id.mobile);
+        String phone = phoneField.getText().toString();
+
+        Contact newContact = new Contact(name, email, phone);
+
+        // check if new contact exists
+        for (Contact c : contacts) {
+            if (newContact.equals(c)) {
+                Toast.makeText(this, name + "  already exists", Toast.LENGTH_SHORT).show();
+                return;
             }
         }
 
-        //Toast.makeText(this, "Saved contact for "+ name + email + mobile, Toast.LENGTH_SHORT).show();
+        // add new contact
+        contacts.add(newContact);
 
-    }
-
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Contact contact = (Contact) parent.getAdapter().getItem(position);
-            System.out.println("item clicked: " + contact.name);
-            Toast.makeText(parent.getContext(), "Clicked " + contact,
-                    Toast.LENGTH_SHORT).show();
-            //contacts.add(contact);
+        // notify adapter change
+        if(adapter != null) {
+            adapter.notifyDataSetChanged();
         }
+    }
 }
