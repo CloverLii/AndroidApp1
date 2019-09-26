@@ -1,12 +1,21 @@
 package comp575.helloworld;
 
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+@Entity
 public class Contact implements Parcelable{
+    @PrimaryKey(autoGenerate = true)
+    public long id;
+    @ColumnInfo(name = "name")
     public String name;
+    @ColumnInfo(name = "email")
     public String email;
+    @ColumnInfo(name = "mobile")
     public String mobile;
 
     public Contact(String name, String email, String mobile) {

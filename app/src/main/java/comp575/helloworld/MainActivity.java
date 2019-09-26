@@ -35,17 +35,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             contactListView.setAdapter(adapter);
             contactListView.setOnItemClickListener(this);
-        }
 
-        // get saved contacts in portrait mode
-        if (savedInstanceState != null) {
-            for (Parcelable contact : savedInstanceState.getParcelableArrayList(
-                    "contacts")) {
-                contacts.add((Contact) contact);
+            // get saved contacts in portrait mode
+            if (savedInstanceState != null) {
+                for (Parcelable contact : savedInstanceState.getParcelableArrayList(
+                        "contacts")) {
+                    contacts.add((Contact) contact);
+                }
+            } else {
+                contacts.add(new Contact("Joe Bloggs", "joe@bloggs.co.nz", "021123456"));
+                contacts.add(new Contact("Jane Doe", "jane@doe.co.nz", "022123456"));
             }
-        } else {
-            contacts.add(new Contact("Joe Bloggs", "joe@bloggs.co.nz", "021123456"));
-            contacts.add(new Contact("Jane Doe", "jane@doe.co.nz", "022123456"));
         }
     }
 
@@ -64,15 +64,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Contact newContact = new Contact(name, email, phone);
 
         // check if new contact exists
-        if(contacts.contains(newContact)){
-            System.out.println("******** update the existed contact");
-            contacts.remove(newContact);
-        }
+        for (Contact c : contacts) {
+            if (newContact.equals(c)) {
+                System.out.println("******** contact has existed");
+                Toast.makeText(this,  name +" exists, update the info ", Toast.LENGTH_SHORT).show();
 
+                // update the info for exist contact
+                c = newContact;
+                System.out.println("******** update existed contact");
+                return;
+            }
+        }
         // add new contact
-        System.out.println("******** add new contact");
+        System.out.print("******** add new contact");
         contacts.add(newContact);
         Toast.makeText(this, " save new contact successfully", Toast.LENGTH_SHORT).show();
+
 
         // notify adapter change
         if(adapter != null) {
@@ -84,16 +91,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Contact contact = (Contact) parent.getAdapter().getItem(position);
         Toast.makeText(parent.getContext(), "Clicked " + contact, Toast.LENGTH_SHORT).show();
-
-        EditText nameField =  (EditText) findViewById(R.id.name);
-        nameField.setText(contact.name);
-
-
-        EditText mobileField = (EditText) findViewById(R.id.mobile);
-        mobileField.setText(contact.mobile);
-
-        EditText emailField = (EditText) findViewById(R.id.email);
-        emailField.setText(contact.email);
     }
 
     @Override
