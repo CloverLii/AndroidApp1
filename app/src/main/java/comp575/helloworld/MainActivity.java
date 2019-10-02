@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ArrayList<Contact> contacts = new ArrayList<Contact>();
     private ArrayAdapter<Contact> adapter;
     private ListView contactListView;
-    private ContactRepository contactRepository;
+    //private ContactRepository contactRepository;
     private LiveData<List<Contact>> allContacts;
     private ContactViewModel contactViewModel;
     private SearchView searchView;
@@ -77,25 +77,29 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
 
         //register an observer
-        contactRepository = new ContactRepository(this);
-        contactRepository.getAllContacts().observe(this, new Observer<List<Contact>>() {
-            @Override
-            public void onChanged(@Nullable List<Contact> updateContacts) {
-                //update the contacts list when the database changes
-                adapter.clear();
-                adapter.addAll(updateContacts);
-            }
-        });
-
-        //register an observer for viewmodel
-//        contactViewModel.getAllContacts().observe(this, new Observer<List<Contact>>() {
+//        contactRepository = new ContactRepository(this);
+//        contactRepository.getAllContacts().observe(this, new Observer<List<Contact>>() {
 //            @Override
-//            public void onChanged(@Nullable List<Contact> updatedContacts) {
+//            public void onChanged(@Nullable List<Contact> updateContacts) {
+//                //update the contacts list when the database changes
 //                adapter.clear();
-//                adapter.addAll(updatedContacts);
+//                adapter.addAll(updateContacts);
 //            }
 //        });
 
+
+        //register an observer for viewmodel
+
+        //register observer for viewmodel
+        contactViewModel.getAllContacts().observe(this, new Observer<List<Contact>>() {
+            @Override
+            public void onChanged(@Nullable List<Contact> updatedContacts) {
+                if(adapter != null){
+                    adapter.clear();
+                    adapter.addAll(updatedContacts);
+                }
+            }
+        });
 
         // get saved contacts in portrait mode
         if (savedInstanceState != null) {
@@ -129,22 +133,35 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
         // update existed contact
-        allContacts = contactRepository.getAllContacts();
+//        allContacts = contactRepository.getAllContacts();
+//        if(allContacts.getValue().contains(newContact)){
+//            System.out.print("******** update contact");
+//            for(Contact c: allContacts.getValue()){
+//                if(c.name.equals(newContact.name)){
+//                    c.email = newContact.email;
+//                    c.mobile = newContact.mobile;
+//                    contactRepository.update(c);
+//                }
+//            }
+//        }else {
+//            // add new contact
+//            System.out.print("******** insert new contact");
+//            contactRepository.insert(newContact);
+//        }
+
+        allContacts = contactViewModel.getAllContacts();
         if(allContacts.getValue().contains(newContact)){
-            System.out.print("******** update contact");
-            for(Contact c: allContacts.getValue()){
+            for(Contact c: allContacts.getValue())
+            {
                 if(c.name.equals(newContact.name)){
                     c.email = newContact.email;
                     c.mobile = newContact.mobile;
-                    contactRepository.update(c);
+                    contactViewModel.update(c);
                 }
             }
         }else {
-            // add new contact
-            System.out.print("******** insert new contact");
-            contactRepository.insert(newContact);
+            contactViewModel.insert(newContact);
         }
-
 
         // notify adapter change
         if(adapter != null) {
@@ -154,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     //delete contact
     public void deleteContact(View view){
-        allContacts = contactRepository.getAllContacts();
+        //allContacts = contactRepository.getAllContacts();
 
         // get the contact info in edit form
         EditText nameField = findViewById(R.id.name);
@@ -164,12 +181,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         EditText mobileField = findViewById(R.id.name);
 
+//        for(Contact c: allContacts.getValue()){
+//            if(c.name.equals(name)){
+//                contactRepository.delete(c);
+//            }
+//
+//        }
+
+        allContacts = contactViewModel.getAllContacts();
         for(Contact c: allContacts.getValue()){
             if(c.name.equals(name)){
-                contactRepository.delete(c);
+                contactViewModel.delete(c);
             }
-
         }
+
         nameField.setText("");
         emailField.setText("");
         mobileField.setText("");
