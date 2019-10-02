@@ -40,34 +40,38 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // associate ViewModel
+        // initial
         contactViewModel = ViewModelProviders.of(this).get(ContactViewModel.class);
-
         searchView = (SearchView)findViewById(R.id.searchView);
-        contactListView = findViewById(R.id.contactsListView);
+        contactListView = (ListView) findViewById(R.id.contactsListView);
+
+        //set adapter
         adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, contacts);
-        contactListView.setTextFilterEnabled(true);
 
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                if(!TextUtils.isEmpty(query)){
-                    contactListView.setFilterText(query);
-                }else {
-                    contactListView.clearTextFilter();
-                }
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });
-
-        //check device orientation
         int orientation = getResources().getConfiguration().orientation;
         if (orientation == Configuration.ORIENTATION_LANDSCAPE){
+           //set query listener
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    if(!TextUtils.isEmpty(query)){
+                        contactListView.setFilterText(query);
+                    }else {
+                        contactListView.clearTextFilter();
+                    }
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    return false;
+                }
+            });
+
+            //enable filter
+            contactListView.setTextFilterEnabled(true);
+
+            //set adapter
             contactListView.setAdapter(adapter);
             contactListView.setOnItemClickListener(this);
         }
