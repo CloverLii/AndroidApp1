@@ -1,41 +1,97 @@
 package comp575.helloworld;
 
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.arch.lifecycle.ViewModelStoreOwner;
 import android.content.res.Configuration;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Filter;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.Toast;
 import android.view.View;
 import android.widget.Adapter;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     private ArrayList<Contact> contacts = new ArrayList<Contact>();
     private ArrayAdapter<Contact> adapter;
     private ListView contactListView;
+    private ContactRepository contactRepository;
+    private LiveData<List<Contact>> allContacts;
+    private ContactViewModel contactViewModel;
+    private SearchView searchView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // setup Adapter
+        // associate ViewModel
+        contactViewModel = ViewModelProviders.of(this).get(ContactViewModel.class);
+
+        searchView = (SearchView)findViewById(R.id.searchView);
         contactListView = findViewById(R.id.contactsListView);
         adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, contacts);
+        contactListView.setTextFilterEnabled(true);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if(!TextUtils.isEmpty(query)){
+                    contactListView.setFilterText(query);
+                }else {
+                    contactListView.clearTextFilter();
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
 
         //check device orientation
         int orientation = getResources().getConfiguration().orientation;
         if (orientation == Configuration.ORIENTATION_LANDSCAPE){
-
             contactListView.setAdapter(adapter);
             contactListView.setOnItemClickListener(this);
         }
+
+        //register an observer
+        contactRepository = new ContactRepository(this);
+        contactRepository.getAllContacts().observe(this, new Observer<List<Contact>>() {
+            @Override
+            public void onChanged(@Nullable List<Contact> updateContacts) {
+                //update the contacts list when the database changes
+                adapter.clear();
+                adapter.addAll(updateContacts);
+            }
+        });
+
+        //register an observer for viewmodel
+//        contactViewModel.getAllContacts().observe(this, new Observer<List<Contact>>() {
+//            @Override
+//            public void onChanged(@Nullable List<Contact> updatedContacts) {
+//                adapter.clear();
+//                adapter.addAll(updatedContacts);
+//            }
+//        });
+
 
         // get saved contacts in portrait mode
         if (savedInstanceState != null) {
@@ -44,8 +100,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 contacts.add((Contact) contact);
             }
         } else {
-            contacts.add(new Contact("Joe Bloggs", "joe@bloggs.co.nz", "021123456"));
-            contacts.add(new Contact("Jane Doe", "jane@doe.co.nz", "022123456"));
+//            contacts.add(new Contact("Joe Bloggs", "joe@bloggs.co.nz", "021123456"));
+//            contacts.add(new Contact("Jane Doe", "jane@doe.co.nz", "022123456"));
         }
     }
 
@@ -63,21 +119,56 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         Contact newContact = new Contact(name, email, phone);
 
-        // check if new contact exists
-        if(contacts.contains(newContact)){
-            System.out.println("******** update the existed contact");
-            contacts.remove(newContact);
+        // add new contact
+        //contacts.add(newContact);
+        //Toast.makeText(this, " save new contact successfully", Toast.LENGTH_SHORT).show();
+
+
+        // update existed contact
+        allContacts = contactRepository.getAllContacts();
+        if(allContacts.getValue().contains(newContact)){
+            System.out.print("******** update contact");
+            for(Contact c: allContacts.getValue()){
+                if(c.name.equals(newContact.name)){
+                    c.email = newContact.email;
+                    c.mobile = newContact.mobile;
+                    contactRepository.update(c);
+                }
+            }
+        }else {
+            // add new contact
+            System.out.print("******** insert new contact");
+            contactRepository.insert(newContact);
         }
 
-        // add new contact
-        System.out.println("******** add new contact");
-        contacts.add(newContact);
-        Toast.makeText(this, " save new contact successfully", Toast.LENGTH_SHORT).show();
 
         // notify adapter change
         if(adapter != null) {
             adapter.notifyDataSetChanged();
         }
+    }
+
+    //delete contact
+    public void deleteContact(View view){
+        allContacts = contactRepository.getAllContacts();
+
+        // get the contact info in edit form
+        EditText nameField = findViewById(R.id.name);
+        String name = nameField.getText().toString();
+
+        EditText emailField = findViewById(R.id.name);
+
+        EditText mobileField = findViewById(R.id.name);
+
+        for(Contact c: allContacts.getValue()){
+            if(c.name.equals(name)){
+                contactRepository.delete(c);
+            }
+
+        }
+        nameField.setText("");
+        emailField.setText("");
+        mobileField.setText("");
     }
 
     @Override
@@ -101,4 +192,5 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         savedState.putParcelableArrayList("contacts", contacts);
         super.onSaveInstanceState(savedState);
     }
+
 }
