@@ -54,16 +54,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
-                    if(!TextUtils.isEmpty(query)){
-                        contactListView.setFilterText(query);
-                    }else {
-                        contactListView.clearTextFilter();
-                    }
                     return false;
                 }
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
+                    if(!TextUtils.isEmpty(newText)){
+                        contactListView.setFilterText(newText);
+                    }else {
+                        contactListView.clearTextFilter();
+                    }
                     return false;
                 }
             });
