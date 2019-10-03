@@ -88,8 +88,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //        });
 
 
-        //register an observer for viewmodel
-
         //register observer for viewmodel
         contactViewModel.getAllContacts().observe(this, new Observer<List<Contact>>() {
             @Override
@@ -177,9 +175,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         EditText nameField = findViewById(R.id.name);
         String name = nameField.getText().toString();
 
-        EditText emailField = findViewById(R.id.name);
+        EditText emailField = findViewById(R.id.email);
 
-        EditText mobileField = findViewById(R.id.name);
+        EditText mobileField = findViewById(R.id.mobile);
 
 //        for(Contact c: allContacts.getValue()){
 //            if(c.name.equals(name)){
@@ -193,6 +191,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if(c.name.equals(name)){
                 contactViewModel.delete(c);
             }
+        }
+
+        // notify adapter change
+        if(adapter != null) {
+            adapter.notifyDataSetChanged();
         }
 
         nameField.setText("");
